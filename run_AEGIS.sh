@@ -1,12 +1,12 @@
 #!/bin/bash
-declare -a test_cases=("QuarterPreTrain" "HalfPreTrain" "ThreeQuarterPreTrain")
-declare -a methods=("AEGIS")
+declare -a test_cases=("NoPreTrain" "QuarterPreTrain" "HalfPreTrain" "ThreeQuarterPreTrain")
+declare -a methods=("AEGIS_051010")
 declare -a arr=("DoorKey-8x8" "DoorKey-16x16" "FourRooms" "MultiRoom-N4-S5" "MultiRoom-N6" "KeyCorridorS4R3" "KeyCorridorS6R3") # "ObstructedMaze-Full-V3"
 
 for env in "${arr[@]}"; do
   for group_name in "${test_cases[@]}"; do
     for int_rew_source in "${methods[@]}"; do
-      for seed in 1; do
+      for seed in 0 1 2 3 4 5 6 7 8 9; do
         # Set total training steps based on the environment
         if [ "$env" == "DoorKey-8x8" ]; then
           total_steps=500_000        
@@ -26,7 +26,7 @@ for env in "${arr[@]}"; do
         # 0 - Not to log
         # 1 - Log both episodic and lifelong states
         # 2 - Log episodic visited states only
-        log_explored_states=0
+        log_explored_states=1
         
         # Default hyperparameters for intrinsic rewards
         int_rew_momentum=0.9

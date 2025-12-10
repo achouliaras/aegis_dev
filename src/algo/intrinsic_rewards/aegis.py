@@ -145,6 +145,39 @@ class AEGIS(IntrinsicRewardBaseModel):
         return curr_cnn_embs, next_cnn_embs, curr_cnn_embs, next_cnn_embs, None
 
 
+    def _add_obs(self, obs):
+        """
+        Add one new element into the episodic observation queue.
+        """
+        self.obs_queue[self.obs_queue_pos] = np.copy(obs)
+        self.obs_queue_filled += 1
+        self.obs_queue_pos += 1
+        self.obs_queue_pos %= self.lmdp_obs_queue_len
+
+
+    def init_obs_queue(self, obs_arr):
+        """
+        In order to ensure the observation queue is not empty on training start
+        by adding all observations received at time step 0.
+        """
+        for obs in obs_arr:
+            self._add_obs(obs)
+ 
+
+    def update_obs_queue(self, iteration, intrinsic_rewards, ir_mean, new_obs, stats_logger):
+        """
+        Update the observation queue after generating the intrinsic rewards for
+        the current RL rollout.
+        """
+        for env_id in range(new_obs.shape[0]):
+            if iteration == 0 or intrinsic_rewards[env_id] >= ir_mean:
+                obs = new_obs[env_id]
+                self._add_obs(obs)
+                stats_logger.add(obs_insertions=1)
+            else:
+                stats_logger.add(obs_insertions=0)
+
+
     def _get_training_losses(self,
         curr_obs: Tensor, next_obs: Tensor, last_mems: Tensor,
         curr_act: Tensor, curr_dones: Tensor,
@@ -205,9 +238,9 @@ class AEGIS(IntrinsicRewardBaseModel):
         if int_rew_source == ModelType.AEGIS_local_only:
             lmdp_loss =  contrastive_loss
         elif int_rew_source == ModelType.AEGIS_global_only:
-            lmdp_loss =  0.2*inv_loss + 0.2*fwd_loss
+            lmdp_loss =  0.2*fwd_loss + 0.2*inv_loss
         else: # ModelType.AEGIS or other variation
-            lmdp_loss = 0.2*inv_loss + 0.2*fwd_loss + contrastive_loss
+            lmdp_loss =  0.5*fwd_loss + 1.0*inv_loss + 1.0*contrastive_loss
 
         if self.log_lmdp_verbose:
             with th.no_grad():
@@ -229,39 +262,6 @@ class AEGIS(IntrinsicRewardBaseModel):
                key_dist, door_dist, goal_dist, \
                n_valid_samples, n_valid_pos_samples, n_valid_neg_samples, \
                avg_likelihood, pos_avg_likelihood, neg_avg_likelihood, dsc_accuracy
-    
-
-    def _add_obs(self, obs):
-        """
-        Add one new element into the episodic observation queue.
-        """
-        self.obs_queue[self.obs_queue_pos] = np.copy(obs)
-        self.obs_queue_filled += 1
-        self.obs_queue_pos += 1
-        self.obs_queue_pos %= self.lmdp_obs_queue_len
-
-
-    def init_obs_queue(self, obs_arr):
-        """
-        In order to ensure the observation queue is not empty on training start
-        by adding all observations received at time step 0.
-        """
-        for obs in obs_arr:
-            self._add_obs(obs)
- 
-
-    def update_obs_queue(self, iteration, intrinsic_rewards, ir_mean, new_obs, stats_logger):
-        """
-        Update the observation queue after generating the intrinsic rewards for
-        the current RL rollout.
-        """
-        for env_id in range(new_obs.shape[0]):
-            if iteration == 0 or intrinsic_rewards[env_id] >= ir_mean:
-                obs = new_obs[env_id]
-                self._add_obs(obs)
-                stats_logger.add(obs_insertions=1)
-            else:
-                stats_logger.add(obs_insertions=0)
 
 
     def get_intrinsic_rewards(self,

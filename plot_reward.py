@@ -13,7 +13,8 @@ LABELS = {"NoModel": "PPO",
           "AEGIS_inverse":"AEGIS_idm",
           "AEGIS_1_1_1":"AEGIS_1_1_1",
           "AEGIS": "AEGIS",
-          "AEGIS_reward": "AEGIS_final"
+          "AEGIS_reward": "AEGIS_final",
+          "AEGIS_051010": "AEGIS_0.5_1_1",
           }
 
 MODES = {"NoPreTrain": "NPT",
@@ -30,8 +31,8 @@ COLORS = {"NoModel": "black",
           "DEIR": "red",
           "AEGIS_inverse": "magenta",
           "AEGIS_1_1_1": "magenta",
-          "AEGIS": "cyan",
-          "AEGIS_reward": "blue",
+          "AEGIS": "blue",
+          "AEGIS_051010": "cyan",
           }
 
 MARKERS = {"NoModel": "o",
@@ -43,7 +44,7 @@ MARKERS = {"NoModel": "o",
            "AEGIS_inverse": "X",
            "AEGIS_1_1_1": "X",
            "AEGIS": "X",
-           "AEGIS_reward": "X",
+           "AEGIS_051010": "X",
            }
 
 # Dict for nicer env titles
@@ -212,6 +213,6 @@ if __name__ == "__main__":
             "MiniGrid-KeyCorridorS6R3-v0",
             ] 
     modes = ["NoPreTrain", "QuarterPreTrain", "HalfPreTrain", "ThreeQuarterPreTrain"]
-    algos_to_compare = ["NoModel", "ICM", "RND", "NGU", "NovelD", "DEIR", "AEGIS_inverse", "AEGIS"]
+    algos_to_compare = ["NoModel", "ICM", "RND", "NGU", "NovelD", "DEIR", "AEGIS_inverse", "AEGIS", "AEGIS_051010"]
     plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ep_info_rew_mean", base_path="logs", out_file_name="reward_all_envs_modes.png", n_seeds=10,
                         figsize=(16, 12), save_kwargs={"dpi": 400})
