@@ -14,12 +14,12 @@ LABELS = {"NoModel": "PPO",
           "AEGIS_1_1_1":"AEGIS_1_1_1",
           "AEGIS": "AEGIS",
           "AEGIS_reward": "AEGIS_final",
-          "AEGIS_051010": "AEGIS_0.5_1_1",
+          "AEGIS_INV+FWD": "AEGIS_INV+FWD",
           }
 
 MODES = {"NoPreTrain": "NPT",
          "QuarterPreTrain": "1QPT",
-         "HalfPreTrain": "2QPT",
+         "HalfPreTrain": "HPT",
          "ThreeQuarterPreTrain": "3QPT"}
 
 # Custom colors and markers for each algo
@@ -32,7 +32,7 @@ COLORS = {"NoModel": "black",
           "AEGIS_inverse": "magenta",
           "AEGIS_1_1_1": "magenta",
           "AEGIS": "blue",
-          "AEGIS_051010": "cyan",
+          "AEGIS_INV+FWD": "cyan",
           }
 
 MARKERS = {"NoModel": "o",
@@ -44,11 +44,14 @@ MARKERS = {"NoModel": "o",
            "AEGIS_inverse": "X",
            "AEGIS_1_1_1": "X",
            "AEGIS": "X",
-           "AEGIS_051010": "X",
+           "AEGIS_INV+FWD": "X",
            }
 
 # Dict for nicer env titles
 ENV_TITLES = {
+    "MiniGrid-BlockedUnlockPickup-v0": "BlockedUnlockPickup",
+    "MiniGrid-RedBlueDoors-8x8-v0": "RedBlueDoors",
+    "MiniGrid-LavaGapS7-v0": "LavaGapS7",
     "MiniGrid-DoorKey-16x16-v0": "DoorKey-16x16",
     "MiniGrid-DoorKey-8x8-v0": "DoorKey-8x8",
     "MiniGrid-MultiRoom-N4-S5-v0": "MultiRoom-N4-S5",
@@ -56,9 +59,13 @@ ENV_TITLES = {
     "MiniGrid-FourRooms-v0": "FourRooms",
     "MiniGrid-KeyCorridorS4R3-v0": "KeyCorridor-S4R3",
     "MiniGrid-KeyCorridorS6R3-v0": "KeyCorridor-S6R3",
+    "MiniGrid-ObstructedMaze-Full-V3-v0": "ObstructedMazeFull",
 }
 
 SMOOTHING_WINDOW = {
+    "MiniGrid-BlockedUnlockPickup-v0": 25,
+    "MiniGrid-RedBlueDoors-8x8-v0": 25,
+    "MiniGrid-LavaGapS7-v0": 25,
     "MiniGrid-DoorKey-8x8-v0": 25,
     "MiniGrid-DoorKey-16x16-v0": 25,
     "MiniGrid-FourRooms-v0": 25,
@@ -66,6 +73,10 @@ SMOOTHING_WINDOW = {
     "MiniGrid-MultiRoom-N6-v0": 25,
     "MiniGrid-KeyCorridorS4R3-v0": 50,
     "MiniGrid-KeyCorridorS6R3-v0": 100,
+    "MiniGrid-ObstructedMaze-Full-V3-v0": 100,
+    "ninja": 100,
+    "climber": 200,
+    "jumper": 200,
 }
 
 def plot_all_envs_modes(
@@ -96,7 +107,10 @@ def plot_all_envs_modes(
         axes = [[ax] for ax in axes]
 
     for i, mode in enumerate(modes):
-        y_pos = 1 - 0.125 - 0.925*i / n_rows  # row center in figure coords
+        if n_rows == 4:
+            y_pos = 1 - 0.125 - 0.925*i / n_rows  # row center in figure coords
+        else:
+            y_pos = 1 - 0.235 - 0.925*i / n_rows  # row center in figure coords
         fig.text(0.01, y_pos, MODES[mode], va="center", ha="center",
              rotation=90, fontsize=16, fontweight="bold")
         for j, env in enumerate(envs):
@@ -161,12 +175,14 @@ def plot_all_envs_modes(
                     alpha=0.2
                 )
                 # --- AUC printout ---
-                if algo in ["NovelD", "DEIR", "AEGIS_reward"]:
+                if algo in ["DEIR", "AEGIS"]:
                     print(f"Reward AUC in {env}-{mode}-{algo}: {merged['mean'].sum():.2f}")
 
             # --- formatting ---
             ax.xaxis.set_major_formatter(ScalarFormatter())
-            # ax.set_ylim(-0.05, 1.05)
+            ax.set_ylim(0, 9.05)
+            if j == 1:
+                ax.set_xlim(0, 2e8)
             ax.ticklabel_format(style="sci", axis="x", scilimits=(0,0))
             ax.tick_params(axis="both", which="major", labelsize=14)
             ax.grid(True, linestyle="--", linewidth=0.7, alpha=0.7)
@@ -194,10 +210,10 @@ def plot_all_envs_modes(
                     ax.axvline(split_step, color="black", linestyle="--")
 
     # one legend for whole fig
-    handles, labels = axes[0][1].get_legend_handles_labels()
+    handles, labels = axes[0][-1].get_legend_handles_labels()
     fig.legend(handles, labels, loc="lower center", ncol=len(algos), fontsize=16, frameon=True)
 
-    plt.tight_layout(rect=[0.02, 0.04, 1, 1])
+    plt.tight_layout(rect=[0.02, 0.08, 1, 1])
 
     os.makedirs("figures", exist_ok=True)
     out_file = f"figures/{out_file_name}"
@@ -207,12 +223,15 @@ def plot_all_envs_modes(
     return  # No return of data here, as multiple subplots
 
 if __name__ == "__main__":
-    envs = ["MiniGrid-DoorKey-16x16-v0",
-            "MiniGrid-FourRooms-v0",
-            "MiniGrid-MultiRoom-N6-v0",
-            "MiniGrid-KeyCorridorS6R3-v0",
-            ] 
-    modes = ["NoPreTrain", "QuarterPreTrain", "HalfPreTrain", "ThreeQuarterPreTrain"]
-    algos_to_compare = ["NoModel", "ICM", "RND", "NGU", "NovelD", "DEIR", "AEGIS_inverse", "AEGIS", "AEGIS_051010"]
-    plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ep_info_rew_mean", base_path="logs", out_file_name="reward_all_envs_modes.png", n_seeds=10,
-                        figsize=(16, 12), save_kwargs={"dpi": 400})
+    envs = [
+            "ninja",
+            "climber",
+            "jumper",
+            ]
+    modes = ["HalfPreTrain", "ThreeQuarterPreTrain"] # "NoPreTrain", "QuarterPreTrain", "ThreeQuarterPreTrain"
+    algos_to_compare = [ "ICM", "NGU", "DEIR", "AEGIS",] # "NoModel", "ICM", "RND", "NGU", "NovelD", "DEIR", 
+    plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ep_rew_mean", base_path="logs", out_file_name="reward_procgen.png", n_seeds=3,
+                        figsize=(16, 7), save_kwargs={"dpi": 400})
+
+    # plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ep_info_rew_mean", base_path="logs", out_file_name="reward_all_envs_modes.png", n_seeds=10,
+    #                     figsize=(16, 7), save_kwargs={"dpi": 400})

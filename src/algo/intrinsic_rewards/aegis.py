@@ -240,7 +240,7 @@ class AEGIS(IntrinsicRewardBaseModel):
         elif int_rew_source == ModelType.AEGIS_global_only:
             lmdp_loss =  0.2*fwd_loss + 0.2*inv_loss
         else: # ModelType.AEGIS or other variation
-            lmdp_loss =  0.5*fwd_loss + 1.0*inv_loss + 1.0*contrastive_loss
+            lmdp_loss =  0.2*fwd_loss + 0.2*inv_loss + 1.0*contrastive_loss
 
         if self.log_lmdp_verbose:
             with th.no_grad():
@@ -276,10 +276,10 @@ class AEGIS(IntrinsicRewardBaseModel):
             # Inverse model prediction
             pred_obs, pred_act, _ = self.model_mlp(curr_rnn_embs, next_rnn_embs, curr_act)
 
-            # # Inverse loss
-            # curr_dones = curr_dones.view(-1)
-            # inv_losses = F.cross_entropy(pred_act, curr_act, reduction='none') * (1 - curr_dones)
-            # inv_loss = inv_losses.clone().cpu().numpy()
+            # Inverse loss
+            curr_dones = curr_dones.view(-1)
+            inv_losses = F.cross_entropy(pred_act, curr_act, reduction='none') * (1 - curr_dones)
+            inv_loss = inv_losses.clone().cpu().numpy()
 
             # Forward loss
             fwd_losses = 0.5 * F.mse_loss(pred_obs, next_rnn_embs, reduction='none') \
@@ -288,8 +288,8 @@ class AEGIS(IntrinsicRewardBaseModel):
             fwd_loss = fwd_losses.clone().cpu().numpy()
 
             # global_novelty = inv_loss
-            # global_novelty = 0.5 * (inv_loss + fwd_loss)
             global_novelty = fwd_loss
+            # global_novelty = inv_loss + fwd_loss
 
         batch_size = curr_obs.shape[0]
         int_rews = np.zeros(batch_size, dtype=np.float32)
@@ -323,6 +323,7 @@ class AEGIS(IntrinsicRewardBaseModel):
             local_rewards[env_id] += mi_dists.min().item()
 
             # Generate global intrinsic reward
+            # global_rewards[env_id] = global_novelty[env_id]
             global_rewards[env_id] = max(global_novelty[env_id] - last_global_novelty[env_id] * self.novelty_alpha, self.novelty_beta) + 1.0
 
             # AEGIS: Equation 9 in the main paper

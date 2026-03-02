@@ -1,12 +1,12 @@
 #!/bin/bash
 declare -a test_cases=("NoPreTrain" "QuarterPreTrain" "HalfPreTrain" "ThreeQuarterPreTrain")
-declare -a methods=("NoModel" "ICM" "RND" "NGU" "NovelD" ) # "DEIR" "AEGIS"
+declare -a methods=("NoModel" "DEIR" "AEGIS"  "ICM" "RND" "NGU")
 declare -a arr=("ninja" "climber" "jumper")
 
 for group_name in "${test_cases[@]}"; do
   for env in "${arr[@]}"; do
     for int_rew_source in "${methods[@]}"; do
-      for seed in 0 1 2; do
+      for seed in 2; do
         # Set total training steps based on the environment
         if [ "$env" == "ninja" ]; then
           total_steps=100_000_000
@@ -68,7 +68,7 @@ for group_name in "${test_cases[@]}"; do
         --model_learning_rate=1e-4 \
         --latents_dim=256 \
         --features_dim=256 \
-        --model_features_dim=64 \
+        --model_features_dim=256 \
         --policy_cnn_type=2 \
         --policy_cnn_norm=LayerNorm \
         --policy_mlp_norm=NoNorm \

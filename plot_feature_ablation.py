@@ -8,7 +8,15 @@ from matplotlib.ticker import ScalarFormatter
 LABELS = {"AEGIS_global_only": "Only $r^{global}$",
           "AEGIS_local_only": "Only $r^{local}$",
           "AEGIS_plus": "$r^{global}+r^{local}$",
-          "AEGIS": "AEGIS",
+          "AEGIS_INV": "INV",
+          "AEGIS_FWD": "FWD",
+          "AEGIS_Diff_INV": "INVd",
+          "AEGIS_Diff_FWD": "FWDd",
+          "AEGIS_INV+FWD": "INV+FWD",
+          "AEGIS_INVxFWD": "INVxFWD",
+          "AEGIS_Diff_INV+FWD": "(INV+FWD)d",
+          "AEGIS_Diff_INVxFWD": "(INVxFWD)d",
+          "AEGIS": "AEGIS (FWDd)",
           }
 
 # Custom colors and markers for each algo
@@ -16,12 +24,29 @@ COLORS = {"AEGIS": "blue",
           "AEGIS_global_only": "orange",
           "AEGIS_local_only": "red",
           "AEGIS_plus": "green",
+          "AEGIS_INV": "purple",
+          "AEGIS_FWD": "brown",
+          "AEGIS_Diff_INV": "pink",
+          "AEGIS_Diff_FWD": "gray",
+          "AEGIS_INV+FWD": "cyan",
+          "AEGIS_INVxFWD": "magenta",
+          "AEGIS_Diff_INV+FWD": "yellow",
+          "AEGIS_Diff_INVxFWD": "black",
          }
 
 MARKERS = {"AEGIS_global_only": "D",
            "AEGIS_local_only": "s",
            "AEGIS": "X",
-           "AEGIS_plus": "o",}
+           "AEGIS_plus": "o",
+           "AEGIS_INV": "^",
+           "AEGIS_FWD": "v",
+           "AEGIS_Diff_INV": "<",
+           "AEGIS_Diff_FWD": ">",
+           "AEGIS_INV+FWD": "p",
+           "AEGIS_INVxFWD": "*",
+           "AEGIS_Diff_INV+FWD": "h",
+           "AEGIS_Diff_INVxFWD": "8",
+          }
 
 def plot_algorithms_for_env(
     env: str,
@@ -205,15 +230,25 @@ if __name__ == "__main__":
     envs = ["MiniGrid-DoorKey-8x8-v0", 
             ] 
     modes = ["HalfPreTrain"]
-    algos_to_compare = ["AEGIS", "AEGIS_global_only", "AEGIS_local_only", "AEGIS_plus",]
+    algos_to_compare = ["AEGIS", "AEGIS_global_only", "AEGIS_local_only", "AEGIS_plus"]
+    algos_to_compare2 = ["AEGIS", "AEGIS_INV", "AEGIS_FWD", "AEGIS_Diff_INV", "AEGIS_Diff_FWD", "AEGIS_INV+FWD", "AEGIS_INVxFWD", "AEGIS_Diff_INV+FWD", "AEGIS_Diff_INVxFWD"]
 
     for mode in modes:
         for env in envs:
-            out_file = f"abl_features.png"
+            out_file = f"abl_int_rew.png"
             data = plot_algorithms_for_env(env=env,
                                            mode=mode,
                                            algos=algos_to_compare,
                                            out_filename=out_file,
+                                           base_path="logs",
+                                           n_seeds=10,
+                                           figsize=(8, 4),
+                                           save_kwargs={"dpi": 200})
+            out_file2 = f"abl_global_rew_features.png"
+            data = plot_algorithms_for_env(env=env,
+                                           mode=mode,
+                                           algos=algos_to_compare2,
+                                           out_filename=out_file2,
                                            base_path="logs",
                                            n_seeds=10,
                                            figsize=(8, 4),

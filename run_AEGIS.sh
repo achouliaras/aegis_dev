@@ -1,7 +1,7 @@
 #!/bin/bash
 declare -a test_cases=("NoPreTrain" "QuarterPreTrain" "HalfPreTrain" "ThreeQuarterPreTrain")
-declare -a methods=("AEGIS_051010")
-declare -a arr=("DoorKey-8x8" "DoorKey-16x16" "FourRooms" "MultiRoom-N4-S5" "MultiRoom-N6" "KeyCorridorS4R3" "KeyCorridorS6R3") # "ObstructedMaze-Full-V3"
+declare -a methods=("AEGIS")
+declare -a arr=("BlockedUnlockPickup" "DoorKey-8x8" "DoorKey-16x16" "FourRooms" "MultiRoom-N4-S5" "MultiRoom-N6" "KeyCorridorS4R3" "KeyCorridorS6R3")
 
 for env in "${arr[@]}"; do
   for group_name in "${test_cases[@]}"; do
@@ -9,11 +9,15 @@ for env in "${arr[@]}"; do
       for seed in 0 1 2 3 4 5 6 7 8 9; do
         # Set total training steps based on the environment
         if [ "$env" == "DoorKey-8x8" ]; then
-          total_steps=500_000        
+          total_steps=500_000
+        elif [ "$env" == "BlockedUnlockPickup" ]; then
+          total_steps=1_000_000
         elif [ "$env" == "MultiRoom-N4-S5" ]; then
           total_steps=1_000_000
         elif [ "$env" == "KeyCorridorS4R3" ]; then
           total_steps=2_500_000
+        elif [ "$env" == "MemoryS17Random" ]; then
+          total_steps=5_000_000
         elif [ "$env" == "KeyCorridorS6R3" ]; then
           total_steps=5_000_000
         elif [ "$env" == "ObstructedMaze-Full-V3" ]; then
@@ -70,7 +74,8 @@ for env in "${arr[@]}"; do
           --model_latents_dim=128 \
           --int_rew_coef=$int_rew_coef \
           --int_rew_momentum=$int_rew_momentum \
-          --rnd_err_norm=$rnd_err_norm
+          --rnd_err_norm=$rnd_err_norm \
+          --log_explored_states=$log_explored_states
         
         # redirect terminal output to null
       done

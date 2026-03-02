@@ -7,25 +7,28 @@ from matplotlib.ticker import ScalarFormatter
 LABELS = {
           "DEIR":"Best of others",
           "MAX":"Theoretical max",
-          "AEGIS": "AEGIS",
+          "AEGIS_unique_states": "AEGIS",
           }
 
 MODES = {"NoPreTrain": "NPT",
          "QuarterPreTrain": "1QPT",
-         "HalfPreTrain": "2QPT",
+         "HalfPreTrain": "HPT",
          "ThreeQuarterPreTrain": "3QPT"}
 
 COLORS = {
           "DEIR": "red",
-          "AEGIS": "blue",
+          "AEGIS_unique_states": "blue",
           }
 
 MARKERS = {"DEIR": "P",
-           "AEGIS": "X",
+           "AEGIS_unique_states": "X",
            }
 
 # Dict for nicer env titles
 ENV_TITLES = {
+    "MiniGrid-BlockedUnlockPickup-v0": "BlockedUnlockPickup",
+    "MiniGrid-RedBlueDoors-8x8-v0": "RedBlueDoors",
+    "MiniGrid-LavaGapS7-v0": "LavaGapS7",
     "MiniGrid-DoorKey-16x16-v0": "DoorKey-16x16",
     "MiniGrid-DoorKey-8x8-v0": "DoorKey-8x8",
     "MiniGrid-MultiRoom-N4-S5-v0": "MultiRoom-N4-S5",
@@ -33,6 +36,17 @@ ENV_TITLES = {
     "MiniGrid-FourRooms-v0": "FourRooms",
     "MiniGrid-KeyCorridorS4R3-v0": "KeyCorridor-S4R3",
     "MiniGrid-KeyCorridorS6R3-v0": "KeyCorridor-S6R3",
+}
+
+SMOOTHING_WINDOW = {
+    "MiniGrid-BlockedUnlockPickup-v0": 25,
+    "MiniGrid-DoorKey-8x8-v0": 25,
+    "MiniGrid-DoorKey-16x16-v0": 25,
+    "MiniGrid-FourRooms-v0": 25,
+    "MiniGrid-MultiRoom-N4-S5-v0": 25,
+    "MiniGrid-MultiRoom-N6-v0": 25,
+    "MiniGrid-KeyCorridorS4R3-v0": 50,
+    "MiniGrid-KeyCorridorS6R3-v0": 100,
 }
 
 def plot_all_envs_modes(
@@ -65,7 +79,7 @@ def plot_all_envs_modes(
     for i, mode in enumerate(modes):
         y_pos = 1 - 0.235 - 0.925*i / n_rows  # row center in figure coords
         fig.text(0.01, y_pos, MODES[mode], va="center", ha="center",
-             rotation=90, fontsize=16, fontweight="bold")
+             rotation=90, fontsize=18, fontweight="bold")
         for j, env in enumerate(envs):
             ax = axes[i][j]
 
@@ -105,6 +119,12 @@ def plot_all_envs_modes(
                 rewards = merged.drop(columns=["time/total_timesteps"])
                 merged["mean"] = rewards.mean(axis=1)
                 merged["std"] = rewards.std(axis=1)
+
+                # --- smoothing (moving average) ---
+                window = SMOOTHING_WINDOW[env]  # adjust size as needed
+                merged["mean"] = merged["mean"].rolling(window, min_periods=1, center=True).mean()
+                merged["std"] = merged["std"].rolling(window, min_periods=1, center=True).mean()
+                
                 averaged[algo] = merged[["time/total_timesteps", "mean", "std"]]
 
                 # --- plotting ---
@@ -136,12 +156,12 @@ def plot_all_envs_modes(
             ax.tick_params(axis="both", which="major", labelsize=14)
             ax.grid(True, linestyle="--", linewidth=0.7, alpha=0.7)
             if i == n_rows - 1:
-                ax.set_xlabel("Steps", fontsize=16)
+                ax.set_xlabel("Steps", fontsize=18)
             if j == 0:
-                ax.set_ylabel("No. of States", fontsize=16)
+                ax.set_ylabel("No. of States", fontsize=18)
 
             if i == 0:
-                ax.set_title(ENV_TITLES.get(env, env), fontsize=18, pad=15)
+                ax.set_title(ENV_TITLES.get(env, env), fontsize=20, pad=15)
 
             # vertical split line logic kept as in your code
             if averaged:
@@ -168,18 +188,18 @@ def plot_all_envs_modes(
                 # flatten at max_y instead of cutting
                 y_vals = y_vals.clip(upper=max_y)
 
-                ax.plot(
-                    x_vals,
-                    y_vals,
-                    label=LABELS["MAX"],
-                    color="gray",
-                    linestyle="-.",
-                    linewidth=2
-                )
+                # ax.plot(
+                #     x_vals,
+                #     y_vals,
+                #     label=LABELS["MAX"],
+                #     color="gray",
+                #     linestyle="-.",
+                #     linewidth=2
+                # )
 
     # one legend for whole fig
     handles, labels = axes[0][0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=len(algos)+1, fontsize=16, frameon=True)
+    fig.legend(handles, labels, loc="lower center", ncol=len(algos)+1, fontsize=18, frameon=True)
 
     plt.tight_layout(rect=[0.02, 0.07, 1, 1])
 
@@ -191,17 +211,17 @@ def plot_all_envs_modes(
     return  # No return of data here, as multiple subplots
 
 if __name__ == "__main__":
-    envs = ["MiniGrid-DoorKey-16x16-v0",
-            "MiniGrid-FourRooms-v0",
-            "MiniGrid-MultiRoom-N6-v0",
+    # "MiniGrid-BlockedUnlockPickup-v0",
+    envs = [
+            "MiniGrid-DoorKey-16x16-v0",
             "MiniGrid-KeyCorridorS6R3-v0",
             ] 
     modes = ["HalfPreTrain", "ThreeQuarterPreTrain"]
-    algos_to_compare = ["DEIR", "AEGIS"]
+    algos_to_compare = ["DEIR", "AEGIS_unique_states"]
 
     # plot lifelong unique states:          rollout/ll_unique_states
     # plot lifelong unique states per step: rollout/ll_unique_states_per_step
     # plot episode unique states:           rollout/ep_unique_states
     # plot episode unique states per step:  rollout/ep_unique_states_per_step
-    plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ll_unique_states", base_path="logs", out_file_name="unique_states_all_envs_modes.png", n_seeds=10,
-                        figsize=(16, 7), save_kwargs={"dpi": 400})
+    plot_all_envs_modes(envs, modes, algos_to_compare, data_to_plot="rollout/ep_unique_states", base_path="logs", out_file_name="unique_states_all_envs_modes.png", n_seeds=10,
+                        figsize=(10, 6), save_kwargs={"dpi": 400})

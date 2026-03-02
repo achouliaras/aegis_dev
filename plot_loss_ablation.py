@@ -6,24 +6,21 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 
 LABELS = {
-          "AEGIS_101010": r"$\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
-          "AEGIS_050505": r"$0.5(\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+\mathcal{L}^{DSCM})$",
           "AEGIS_100000": r"$\mathcal{L}^{FDM}$",
           "AEGIS_001000": r"$\mathcal{L}^{IDM}$",
           "AEGIS_000010": r"$\mathcal{L}^{DSCM}$",
           "AEGIS_101000": r"$\mathcal{L}^{FDM}+\mathcal{L}^{IDM}$",
           "AEGIS_001010": r"$\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
           "AEGIS_100010": r"$\mathcal{L}^{FDM}+\mathcal{L}^{DSCM}$",
-          "AEGIS_050500": r"$0.5\mathcal{L}^{FDM}+0.5\mathcal{L}^{IDM}$",
-          "AEGIS_000505": r"$0.5\mathcal{L}^{IDM}+0.5\mathcal{L}^{DSCM}$",
-          "AEGIS_050005": r"$0.5\mathcal{L}^{FDM}+0.5\mathcal{L}^{DSCM}$",
+          "AEGIS_101010": r"$\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
           "AEGIS_101005": r"$\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+0.5\mathcal{L}^{DSCM}$",
           "AEGIS_050510": r"$0.5\mathcal{L}^{FDM}+0.5\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
           "AEGIS_051010": r"$0.5\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
           "AEGIS_100510": r"$\mathcal{L}^{FDM}+0.5\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
-          "AEGIS_021010": r"$0.2\mathcal{L}^{FDM}+1.0\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
+          "AEGIS_021010": r"$0.2\mathcal{L}^{FDM}+\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
           "AEGIS_050710": r"$0.5\mathcal{L}^{FDM}+0.7\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
-          "AEGIS": r"AEGIS($0.2\mathcal{L}^{FDM}+0.2\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$)",
+          "AEGIS_020510": r"0.2$\mathcal{L}^{FDM}+0.5\mathcal{L}^{IDM}+\mathcal{L}^{DSCM}$",
+          "AEGIS": r"AEGIS",
           }
 
 MODES = {"NoPreTrain": "NPT",
@@ -34,42 +31,36 @@ MODES = {"NoPreTrain": "NPT",
 # Custom colors and markers for each algo
 COLORS = {"AEGIS": "blue",
           "AEGIS_101010": "cyan",
-          "AEGIS_050505": "magenta",
           "AEGIS_100000": "orange",
           "AEGIS_001000": "green",
           "AEGIS_000010": "red",
-          "AEGIS_101000": "lime",
-          "AEGIS_001010": "teal",
-          "AEGIS_100010": "navy",
-          "AEGIS_050500": "purple",
-          "AEGIS_000505": "brown",
-          "AEGIS_050005": "pink",
+          "AEGIS_101000": "magenta",
+          "AEGIS_001010": "gold",
+          "AEGIS_100010": "purple",
           "AEGIS_051010": "darkorange",
           "AEGIS_100510": "darkgreen",
           "AEGIS_101005": "olive",
-          "AEGIS_021010": "gold",
-          "AEGIS_050510": "gray",
+          "AEGIS_021010": "teal",
+          "AEGIS_050510": "lime",
           "AEGIS_050710": "darkblue",
+          "AEGIS_020510": "brown",
          }
 
 MARKERS = {"AEGIS": "X",
            "AEGIS_101010": "o",
-           "AEGIS_050505": "s",
            "AEGIS_100000": "<",
            "AEGIS_001000": ">",
            "AEGIS_000010": "^",
            "AEGIS_101000": "8",
            "AEGIS_001010": "p",
            "AEGIS_100010": "P",
-           "AEGIS_050500": "v",
-           "AEGIS_000505": "h",
-           "AEGIS_050005": "*",
            "AEGIS_101005": "D",
            "AEGIS_050510": "P",
            "AEGIS_051010": "X",
            "AEGIS_100510": "s",
            "AEGIS_021010": "o",
            "AEGIS_050710": "v",
+           "AEGIS_020510": "*",
         }
 
 def plot_algorithms_for_env(
@@ -207,7 +198,7 @@ def plot_algorithms_for_env(
     ax1.grid(True)
     ax1.legend(
         loc="upper left",
-        fontsize=10,
+        fontsize=14,
     )
 
     # leave extra room on the right (adjust 0.8 if legend is too cramped)
@@ -256,8 +247,8 @@ if __name__ == "__main__":
             ] 
     modes = ["HalfPreTrain"]
 
-    algos_to_compare = ["AEGIS_100000", "AEGIS_001000", "AEGIS_000010", "AEGIS_050500", "AEGIS_000505", "AEGIS_050005", "AEGIS_101000", "AEGIS_001010", "AEGIS_100010", "AEGIS_101010", "AEGIS_051010", "AEGIS"]
-    algos_to_compare2 = ["AEGIS_050505", "AEGIS_101010", "AEGIS_101005", "AEGIS_050510", "AEGIS_051010", "AEGIS_100510", "AEGIS", "AEGIS_021010",  "AEGIS_050710"]
+    algos_to_compare = ["AEGIS_100000", "AEGIS_001000", "AEGIS_000010", "AEGIS_101000", "AEGIS_001010", "AEGIS_100010", "AEGIS_101010", "AEGIS"]
+    algos_to_compare2 = ["AEGIS_101010", "AEGIS_101005", "AEGIS_050510", "AEGIS_051010", "AEGIS_100510", "AEGIS_021010",  "AEGIS_050710", "AEGIS_020510", "AEGIS"]
     for mode in modes:
         for env in envs:
             out_file = f"abl_loss_coef.png"
