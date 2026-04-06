@@ -236,7 +236,7 @@ class PPORollout(BaseAlgorithm):
         self._last_policy_mems = float_zeros([self.n_envs, self.policy.gru_layers, self.policy.dim_policy_features])
         self._last_model_mems = float_zeros([self.n_envs, self.policy.gru_layers, self.policy.dim_model_features])
 
-        if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only]:
+        if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only, ModelType.AEGIS_min_max]:
             self.policy.int_rew_model.init_obs_queue(self._last_obs)
             # last_obs_tensor = obs_as_tensor(self._last_obs, self.device)
             # self.policy.int_rew_model.init_novel_experience_memory(last_obs_tensor, 
@@ -390,7 +390,7 @@ class PPORollout(BaseAlgorithm):
             if dones[env_id]:
                 if policy_mems is not None: policy_mems[env_id] *= 0.0
                 if model_mems is not None: model_mems[env_id] *= 0.0
-                if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only]:
+                if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only, ModelType.AEGIS_min_max]:
                     if self._last_global_novelty is not None: self._last_global_novelty[env_id] = 0.0
                 self.episodic_obs_emb_history[env_id] = None
                 self.episodic_trj_emb_history[env_id] = None
@@ -568,7 +568,7 @@ class PPORollout(BaseAlgorithm):
                 target_dists_tensor = None
 
         # Aegis
-        if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only]:
+        if self.int_rew_source in [ModelType.AEGIS, ModelType.AEGIS_alt, ModelType.AEGIS_global_only, ModelType.AEGIS_local_only, ModelType.AEGIS_min_max]:
             intrinsic_rewards, model_mems, last_global_novelty = self.policy.int_rew_model.get_intrinsic_rewards(
                 curr_obs=curr_obs_tensor,
                 next_obs=next_obs_tensor,

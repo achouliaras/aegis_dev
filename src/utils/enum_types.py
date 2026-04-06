@@ -16,6 +16,7 @@ class ModelType(Enum):
     AEGIS_alt = 10 # alternating updates of policy and model
     AEGIS_global_only = 11 # only global intrinsic reward
     AEGIS_local_only = 12 # only local intrinsic reward
+    AEGIS_min_max = 13 # AEGIS with min-max objective of the intrinsic reward
 
     @staticmethod
     def get_enum_model_type(model_type):
@@ -29,9 +30,9 @@ class ModelType(Enum):
                 return ModelType.RND
             elif model_type == "ngu":
                 return ModelType.NGU
-            elif model_type == "noveld":
+            elif "noveld" in model_type:
                 return ModelType.NovelD
-            elif model_type == "deir":
+            elif "deir" in model_type:
                 return ModelType.DEIR
             elif model_type == "plainforward":
                 return ModelType.PlainForward
@@ -45,6 +46,8 @@ class ModelType(Enum):
                 return ModelType.AEGIS_global_only
             elif "local_only" in model_type:
                 return ModelType.AEGIS_local_only
+            elif "aegis_min_max" in model_type:
+                return ModelType.AEGIS_min_max
             elif "aegis" in model_type:
                 return ModelType.AEGIS
             else:

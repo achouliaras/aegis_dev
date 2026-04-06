@@ -16,11 +16,18 @@ LABELS = {"AEGIS_global_only": "Only $r^{global}$",
           "AEGIS_INVxFWD": "INVxFWD",
           "AEGIS_Diff_INV+FWD": "(INV+FWD)d",
           "AEGIS_Diff_INVxFWD": "(INVxFWD)d",
-          "AEGIS": "AEGIS (FWDd)",
+          "AEGIS": "AEGIS",
+          "NovelD_noisy": "NovelD (Noisy Obs)",
+          "DEIR_noisy": "DEIR (Noisy Obs)",
+          "AEGIS_noisy": "AEGIS (Noisy Obs)",
+          "AEGIS_min_max_FDM": "FDM min-max",
+          "AEGIS_min_max_IDM": "IDM min-max",
+          "AEGIS_min_max_FDM_IDM": "FDM+IDM min-max",
           }
 
 # Custom colors and markers for each algo
 COLORS = {"AEGIS": "blue",
+          "AEGIS_noisy": "black",
           "AEGIS_global_only": "orange",
           "AEGIS_local_only": "red",
           "AEGIS_plus": "green",
@@ -32,11 +39,17 @@ COLORS = {"AEGIS": "blue",
           "AEGIS_INVxFWD": "magenta",
           "AEGIS_Diff_INV+FWD": "yellow",
           "AEGIS_Diff_INVxFWD": "black",
-         }
+          "NovelD_noisy": "purple",
+          "DEIR_noisy": "red",
+          "AEGIS_min_max_FDM": "orange",
+          "AEGIS_min_max_IDM": "green",
+          "AEGIS_min_max_FDM_IDM": "magenta",
+          }
 
 MARKERS = {"AEGIS_global_only": "D",
            "AEGIS_local_only": "s",
            "AEGIS": "X",
+           "AEGIS_noisy": "X",
            "AEGIS_plus": "o",
            "AEGIS_INV": "^",
            "AEGIS_FWD": "v",
@@ -46,7 +59,17 @@ MARKERS = {"AEGIS_global_only": "D",
            "AEGIS_INVxFWD": "*",
            "AEGIS_Diff_INV+FWD": "h",
            "AEGIS_Diff_INVxFWD": "8",
+           "AEGIS_min_max_FDM": "<",
+           "AEGIS_min_max_IDM": ">",
+           "AEGIS_min_max_FDM_IDM": "p",
+           "NovelD_noisy": "v",
+           "DEIR_noisy": "P",
           }
+
+SMOOTHING_WINDOW = {
+    "MiniGrid-DoorKey-8x8-v0": 2,
+    "MiniGrid-DoorKey-16x16-v0": 25,
+}
 
 def plot_algorithms_for_env(
     env: str,
@@ -155,6 +178,11 @@ def plot_algorithms_for_env(
         merged_s["mean"] = states.mean(axis=1)
         merged_s["std"] = states.std(axis=1)
 
+        # --- smoothing (moving average) ---
+        window = SMOOTHING_WINDOW[env]  # adjust size as needed
+        merged_r["mean"] = merged_r["mean"].rolling(window, min_periods=1, center=True).mean()
+        merged_r["std"] = merged_r["std"].rolling(window, min_periods=1, center=True).mean()
+
         averaged[algo] = merged_r[["time/total_timesteps", "mean", "std"]]
         averaged_states[algo] = merged_s[["time/total_timesteps", "mean", "std"]]
 
@@ -230,25 +258,35 @@ if __name__ == "__main__":
     envs = ["MiniGrid-DoorKey-8x8-v0", 
             ] 
     modes = ["HalfPreTrain"]
-    algos_to_compare = ["AEGIS", "AEGIS_global_only", "AEGIS_local_only", "AEGIS_plus"]
-    algos_to_compare2 = ["AEGIS", "AEGIS_INV", "AEGIS_FWD", "AEGIS_Diff_INV", "AEGIS_Diff_FWD", "AEGIS_INV+FWD", "AEGIS_INVxFWD", "AEGIS_Diff_INV+FWD", "AEGIS_Diff_INVxFWD"]
+    # algos_to_compare = ["AEGIS", "AEGIS_global_only", "AEGIS_local_only", "AEGIS_plus"]
+    # algos_to_compare2 = ["AEGIS", "AEGIS_INV", "AEGIS_FWD", "AEGIS_Diff_INV", "AEGIS_Diff_FWD", "AEGIS_INV+FWD", "AEGIS_INVxFWD", "AEGIS_Diff_INV+FWD", "AEGIS_Diff_INVxFWD"]
+    algos_to_compare3 = ["AEGIS_noisy", "AEGIS", "AEGIS_min_max_FDM", "AEGIS_min_max_IDM", "AEGIS_min_max_FDM_IDM"]
 
     for mode in modes:
         for env in envs:
-            out_file = f"abl_int_rew.png"
+            # out_file = f"abl_int_rew.png"
+            # data = plot_algorithms_for_env(env=env,
+            #                                mode=mode,
+            #                                algos=algos_to_compare,
+            #                                out_filename=out_file,
+            #                                base_path="logs",
+            #                                n_seeds=10,
+            #                                figsize=(8, 4),
+            #                                save_kwargs={"dpi": 200})
+            # out_file2 = f"abl_global_rew_features.png"
+            # data = plot_algorithms_for_env(env=env,
+            #                                mode=mode,
+            #                                algos=algos_to_compare2,
+            #                                out_filename=out_file2,
+            #                                base_path="logs",
+            #                                n_seeds=10,
+            #                                figsize=(8, 4),
+            #                                save_kwargs={"dpi": 200})
+            out_file3 = f"abl_noisy_tv.png"
             data = plot_algorithms_for_env(env=env,
                                            mode=mode,
-                                           algos=algos_to_compare,
-                                           out_filename=out_file,
-                                           base_path="logs",
-                                           n_seeds=10,
-                                           figsize=(8, 4),
-                                           save_kwargs={"dpi": 200})
-            out_file2 = f"abl_global_rew_features.png"
-            data = plot_algorithms_for_env(env=env,
-                                           mode=mode,
-                                           algos=algos_to_compare2,
-                                           out_filename=out_file2,
+                                           algos=algos_to_compare3,
+                                           out_filename=out_file3,
                                            base_path="logs",
                                            n_seeds=10,
                                            figsize=(8, 4),
